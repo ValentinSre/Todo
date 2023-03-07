@@ -41,6 +41,18 @@ public class TodoService {
     return todos.get(id);
   }
   
+  public Todo add(final Todo todo) {
+	final String id = "TD" + System.currentTimeMillis() + "_ID";
+	final Todo newTodo = new Todo(id,
+	   todo.getTitle(),
+	   todo.getState(),
+	   todo.getDescription(),
+	   todo.getPosition());
+	todos.put(id, newTodo);
+	
+	return newTodo;
+  }
+  
   public Todo update(final Todo todo) {
     todos.put(todo.getId(), todo);
     return todo;

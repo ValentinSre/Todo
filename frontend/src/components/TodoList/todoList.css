@@ -48,3 +48,49 @@
   border-radius: 0.25rem;
   cursor: pointer;
 }
+
+form {
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+}
+
+input[type="text"], textarea {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+input[type="text"] {
+  background-color: #f2f2f2;
+}
+
+textarea {
+  background-color: #fff;
+}
+
+button[type="submit"] {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+button[type="submit"]:hover {
+  background-color: #2E8B57;
+}
+
+.form-container {
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.2);
+}

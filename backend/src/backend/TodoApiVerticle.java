@@ -38,7 +38,7 @@ public class TodoApiVerticle extends AbstractVerticle {
 		      .end(Json.encode(jsonResponse));
 		}
   
-	private void getOneTodo(RoutingContext routingContext) {
+	private void getTodo(RoutingContext routingContext) {
 		  LOGGER.info("Getting a precise todo...");
 		  final String id = routingContext.request().getParam("id");
 		  
@@ -49,7 +49,26 @@ public class TodoApiVerticle extends AbstractVerticle {
 		      .putHeader("content-type", "application/json")
 		      .end(Json.encode(todo));
 	}
-		 
+	
+	private void createTodo(RoutingContext routingContext) {
+		  LOGGER.info("Creating a todo...");
+		  
+		  final JsonObject body = routingContext.getBodyAsJson();
+		  final String title = body.getString("title");
+		  final String description = body.getString("description");
+		  
+		  final Map<String, Todo> todosMap = todoService.getTodosMap();
+		  todosMap.values().stream().forEach(todo -> todo.setPosition(todo.getPosition() + 1));
+		  
+		  final Todo todo = new Todo(null, title, 0, description, 1);
+		  final Todo createdTodo = todoService.add(todo);
+
+		  routingContext.response()
+		      .setStatusCode(201)
+		      .putHeader("content-type", "application/json")
+		      .end(Json.encode(createdTodo));
+	}
+		  
 	private void updateOneTodo(RoutingContext routingContext) {
 	    LOGGER.info("Updating a todo...");
 
@@ -137,7 +156,8 @@ public class TodoApiVerticle extends AbstractVerticle {
 		router.route().handler(BodyHandler.create());
 		router.get("/api/todos")
     		.handler(this::getAllTodos);
-		router.get("/api/todos/:id").handler(this::getOneTodo);
+		router.get("/api/todos/:id").handler(this::getTodo);
+		router.post("/api/todo").handler(this::createTodo);
 		router.route(HttpMethod.PUT, "/api/todos/:id")
 	    	.handler(this::updateOneTodo);
 
