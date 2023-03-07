@@ -20,36 +20,11 @@ import service.TodoService;
 
 public class TodoApiVerticle extends AbstractVerticle {
 	
+	// Init
 	private final TodoService todoService = new TodoService();
-	
-	private void getAllTodos(RoutingContext routingContext) {
-		  LOGGER.info("Fetching all todos...");
+	private static final Logger LOGGER = LoggerFactory.getLogger(TodoApiVerticle.class);
 
-		  final List<bean.Todo> todos = todoService.findAll();
-		  LOGGER.info(todos);
-		  
-		  final JsonObject jsonResponse = new JsonObject();
-		  jsonResponse.put("todos", todos);
-		  LOGGER.info(jsonResponse);
-		  routingContext.response()
-		      .setStatusCode(200)
-		      .putHeader("Access-Control-Allow-Origin", "*") // autorise toutes les origines
-		      .putHeader("content-type", "application/json")
-		      .end(Json.encode(jsonResponse));
-		}
-  
-	private void getTodo(RoutingContext routingContext) {
-		  LOGGER.info("Getting a precise todo...");
-		  final String id = routingContext.request().getParam("id");
-		  
-		  final Todo todo = todoService.findById(id);
-
-		  routingContext.response()
-		      .setStatusCode(200)
-		      .putHeader("content-type", "application/json")
-		      .end(Json.encode(todo));
-	}
-	
+	// CRUD methods
 	private void createTodo(RoutingContext routingContext) {
 		  LOGGER.info("Creating a todo...");
 		  
@@ -68,8 +43,36 @@ public class TodoApiVerticle extends AbstractVerticle {
 		      .putHeader("content-type", "application/json")
 		      .end(Json.encode(createdTodo));
 	}
+	
+	private void getTodo(RoutingContext routingContext) {
+		  LOGGER.info("Getting a precise todo...");
+		  final String id = routingContext.request().getParam("id");
 		  
-	private void updateOneTodo(RoutingContext routingContext) {
+		  final Todo todo = todoService.findById(id);
+
+		  routingContext.response()
+		      .setStatusCode(200)
+		      .putHeader("content-type", "application/json")
+		      .end(Json.encode(todo));
+	}
+
+	private void getAllTodos(RoutingContext routingContext) {
+		  LOGGER.info("Fetching all todos...");
+
+		  final List<bean.Todo> todos = todoService.findAll();
+		  LOGGER.info(todos);
+		  
+		  final JsonObject jsonResponse = new JsonObject();
+		  jsonResponse.put("todos", todos);
+		  LOGGER.info(jsonResponse);
+		  routingContext.response()
+		      .setStatusCode(200)
+		      .putHeader("Access-Control-Allow-Origin", "*") // autorise toutes les origines
+		      .putHeader("content-type", "application/json")
+		      .end(Json.encode(jsonResponse));
+		}
+		  
+	private void updateTodo(RoutingContext routingContext) {
 	    LOGGER.info("Updating a todo...");
 
 	    final String id = routingContext.request().getParam("id");
@@ -134,8 +137,29 @@ public class TodoApiVerticle extends AbstractVerticle {
 	        .end(Json.encode(jsonResponse));
 	}
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TodoApiVerticle.class);
+	private void deleteTodo(final RoutingContext routingContext) {
+	    LOGGER.info("Deleting a todo...");
+	    
+	    final String id = routingContext.request().getParam("id");
+	    
+	    final Todo existingTodo = todoService.findById(id);
+		final Map<String, Todo> todosMap = todoService.getTodosMap();
+		todosMap.values().stream()
+			.filter(todo -> todo.getPosition() > existingTodo.getPosition())
+			.forEach(todo -> todo.setPosition(todo.getPosition() - 1));
+	    
+		todoService.remove(id);
 
+	    final List<bean.Todo> todos = todoService.findAll();
+	    final JsonObject jsonResponse = new JsonObject();
+	    jsonResponse.put("todos", todos);
+	    routingContext.response()
+	        .setStatusCode(200)
+	        .putHeader("content-type", "application/json")
+	        .end(Json.encode(jsonResponse));
+	}
+	
+	// Managing verticle
 	@Override
 	public void start() throws Exception {
 		LOGGER.info("Lancement du verticle");
@@ -154,12 +178,11 @@ public class TodoApiVerticle extends AbstractVerticle {
 
 		// Routes
 		router.route().handler(BodyHandler.create());
-		router.get("/api/todos")
-    		.handler(this::getAllTodos);
-		router.get("/api/todos/:id").handler(this::getTodo);
 		router.post("/api/todo").handler(this::createTodo);
-		router.route(HttpMethod.PUT, "/api/todos/:id")
-	    	.handler(this::updateOneTodo);
+		router.get("/api/todos/:id").handler(this::getTodo);
+		router.get("/api/todos").handler(this::getAllTodos);
+		router.route(HttpMethod.PUT, "/api/todos/:id").handler(this::updateTodo);
+	    router.delete("/:id").handler(this::deleteTodo);
 
 		vertx.createHttpServer()
 	    	.requestHandler(router)
@@ -168,6 +191,6 @@ public class TodoApiVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop() throws Exception {
-		LOGGER.info("Fin...");
+		LOGGER.info("Fermeture du verticle");
 	}
 }

@@ -26,13 +26,19 @@ function TodoList() {
   };
 
   const renderTodo = (todo) => {
+    const handleDeleteClick = () => {
+      axios.delete(`http://localhost:8081/${todo.id}`)
+        .then(response => setTodos(response.data.todos))
+        .catch(error => console.error(error));
+    };
+
     return (
       <li key={todo.id} className={`todo-item ${todo.state ? 'completed' : ''}`}>
         <div className="todo-details">
           <input type="checkbox" checked={todo.state} onChange={() => handleCheckboxChange(todo.id, todo.state)} />
           <Link to={`/todo/${todo.id}`} className="todo-title">{todo.title}</Link>
         </div>
-        <button>Supprimer</button>
+        <button onClick={handleDeleteClick}>Supprimer</button>
       </li>
     );
   };
