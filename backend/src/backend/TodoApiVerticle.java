@@ -3,6 +3,7 @@ package backend;
 import bean.Todo;
 
 import java.util.List;
+import java.util.Map;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
@@ -37,6 +38,18 @@ public class TodoApiVerticle extends AbstractVerticle {
 		      .end(Json.encode(jsonResponse));
 		}
   
+	private void getOneTodo(RoutingContext routingContext) {
+		  LOGGER.info("Getting a precise todo...");
+		  final String id = routingContext.request().getParam("id");
+		  
+		  final Todo todo = todoService.findById(id);
+
+		  routingContext.response()
+		      .setStatusCode(200)
+		      .putHeader("content-type", "application/json")
+		      .end(Json.encode(todo));
+	}
+		 
 	private void updateOneTodo(RoutingContext routingContext) {
 	    LOGGER.info("Updating a todo...");
 
@@ -63,8 +76,33 @@ public class TodoApiVerticle extends AbstractVerticle {
 	    final String title = body.getString("title", existingTodo.getTitle());
 	    final int state = body.getInteger("state", existingTodo.getState());
 	    final String description = body.getString("description", existingTodo.getDescription());
+	    int position;
+	    
+	    final Map<String, Todo> todosMap = todoService.getTodosMap();
 
-	    final Todo updatedTodo = new Todo(id, title, state, description);
+	    if (state != existingTodo.getState()) {
+	        if (state == 1) {
+	            position = todosMap.size();
+	            todosMap.values().stream()
+	                .filter(todo -> todo.getPosition() > existingTodo.getPosition())
+	                .forEach(todo -> todo.setPosition(todo.getPosition() - 1));
+	        } else {
+	            int maxPositionWithState0 = todosMap.values().stream()
+	                    .filter(todo -> todo.getState() == 0)
+	                    .mapToInt(Todo::getPosition)
+	                    .max()
+	                    .orElse(0);
+
+	            position = maxPositionWithState0 + 1;
+	            todosMap.values().stream()
+	                    .filter(todo -> todo.getState() == 1 && todo.getPosition() >= position && todo.getPosition() < existingTodo.getPosition())
+	                    .forEach(todo -> todo.setPosition(todo.getPosition() + 1));
+	        }
+	    } else {
+	    	position = existingTodo.getPosition();
+	    }
+
+	    final Todo updatedTodo = new Todo(id, title, state, description, position);
 	    final Todo savedTodo = todoService.update(updatedTodo);
 
 	    final List<bean.Todo> todos = todoService.findAll();
@@ -76,7 +114,6 @@ public class TodoApiVerticle extends AbstractVerticle {
 	        .putHeader("content-type", "application/json")
 	        .end(Json.encode(jsonResponse));
 	}
-
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TodoApiVerticle.class);
 
@@ -96,11 +133,11 @@ public class TodoApiVerticle extends AbstractVerticle {
 			    .allowedHeader("Content-Type");
 			router.route().handler(corsHandler);
 
-		
 		// Routes
 		router.route().handler(BodyHandler.create());
 		router.get("/api/todos")
     		.handler(this::getAllTodos);
+		router.get("/api/todos/:id").handler(this::getOneTodo);
 		router.route(HttpMethod.PUT, "/api/todos/:id")
 	    	.handler(this::updateOneTodo);
 
