@@ -10,16 +10,18 @@ function TodoList() {
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
 
   useEffect(() => {
-    axios.get('http://localhost:8081/api/todos')
+    axios.get(`${apiUrl}/api/todos`)
       .then(response => setTodos(response.data.todos))
       .catch(error => console.error(error));
-  }, []);
+  }, [apiUrl]);
 
   const handleCheckboxChange = (todoId, todoState) => {
-    axios.put(`http://localhost:8081/api/todos/${todoId}`, {
-      state: todoState ? config.state.unchecked : config.state.checked
+    axios.put(`${apiUrl}/api/todos/${todoId}`, {
+      state: todoState ? 'unchecked' : 'checked'
     })
     .then(response => setTodos(response.data.todos))
     .catch(error => console.error(error));
@@ -27,7 +29,7 @@ function TodoList() {
 
   const renderTodo = (todo) => {
     const handleDeleteClick = () => {
-      axios.delete(`http://localhost:8081/${todo.id}`)
+      axios.delete(`${apiUrl}/api/todos/${todo.id}`)
         .then(response => setTodos(response.data.todos))
         .catch(error => console.error(error));
     };
@@ -38,7 +40,7 @@ function TodoList() {
           <input type="checkbox" checked={todo.state} onChange={() => handleCheckboxChange(todo.id, todo.state)} />
           <Link to={`/todo/${todo.id}`} className="todo-title">{todo.title}</Link>
         </div>
-        <button onClick={handleDeleteClick}>Supprimer</button>
+        <button id={todo.id} onClick={handleDeleteClick}>Supprimer</button>
       </li>
     );
   };
@@ -61,7 +63,7 @@ function TodoList() {
       return;
     }
 
-    axios.post('http://localhost:8081/api/todo', {
+    axios.post(`${apiUrl}/api/todo`, {
       title,
       description
     })
@@ -81,8 +83,8 @@ function TodoList() {
       </ul>
       <div className="form-container">
         <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Titre" value={title} onChange={handleTitleChange} />
-          <textarea placeholder="Description" value={description} onChange={handleDescriptionChange} />
+          <input type="text" placeholder="Titre" value={title} onChange={handleTitleChange} label="Titre" />
+          <textarea placeholder="Description" value={description} onChange={handleDescriptionChange} label="Description" />
           <button type="submit">Ajouter</button>
         </form>
       </div>
