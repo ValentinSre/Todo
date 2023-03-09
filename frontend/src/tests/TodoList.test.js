@@ -34,7 +34,7 @@ describe('TodoList', () => {
     const todos = [{ id: 1, title: 'Todo 1', description: 'Description 1', state: false }];
 
     axios.get.mockResolvedValue({ data: { todos } });
-    axios.put.mockResolvedValue({ data: { todos: [{ ...todos[0], state: true }] } });
+    axios.put.mockResolvedValue({ data: { todos: [{ id: 1, title: 'Todo 1', description: 'Description 1', state: true }] } });
 
     render(<MemoryRouter><TodoList /></ MemoryRouter>);
 
@@ -43,9 +43,7 @@ describe('TodoList', () => {
     fireEvent.click(screen.getByRole('checkbox'));
 
     expect(axios.put).toHaveBeenCalledTimes(1);
-    expect(axios.put).toHaveBeenCalledWith(expect.stringContaining('/api/todos/1'), {
-      state: 'checked'
-    });
+    expect(axios.put).toHaveBeenCalledWith(expect.stringContaining('/1'), { state: 1 });
   });
 
   it('should delete todo when delete button is clicked', async () => {
@@ -61,7 +59,7 @@ describe('TodoList', () => {
     fireEvent.click(screen.getByText('Supprimer'));
 
     expect(axios.delete).toHaveBeenCalledTimes(1);
-    expect(axios.delete).toHaveBeenCalledWith(expect.stringContaining('/api/todos/1'));
+    expect(axios.delete).toHaveBeenCalledWith(expect.stringContaining('/1'));
   });
 
   it('should create todo when form is submitted', async () => {

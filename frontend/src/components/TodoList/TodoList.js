@@ -11,7 +11,7 @@ function TodoList() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
+  const apiUrl = 'http://localhost:8081';
 
   useEffect(() => {
     axios.get(`${apiUrl}/api/todos`)
@@ -21,7 +21,7 @@ function TodoList() {
 
   const handleCheckboxChange = (todoId, todoState) => {
     axios.put(`${apiUrl}/api/todos/${todoId}`, {
-      state: todoState ? 'unchecked' : 'checked'
+      state: todoState ? config.state.unchecked : config.state.checked
     })
     .then(response => setTodos(response.data.todos))
     .catch(error => console.error(error));
@@ -29,7 +29,7 @@ function TodoList() {
 
   const renderTodo = (todo) => {
     const handleDeleteClick = () => {
-      axios.delete(`${apiUrl}/api/todos/${todo.id}`)
+      axios.delete(`${apiUrl}/${todo.id}`)
         .then(response => setTodos(response.data.todos))
         .catch(error => console.error(error));
     };
