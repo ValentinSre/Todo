@@ -1,6 +1,4 @@
-package backend;
-
-import bean.Todo;
+package main.java.backend;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +14,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
-import service.TodoService;
+import main.java.bean.Todo;
+import main.java.service.TodoService;
 
 public class TodoApiVerticle extends AbstractVerticle {
 	
@@ -59,7 +58,7 @@ public class TodoApiVerticle extends AbstractVerticle {
 	private void getAllTodos(RoutingContext routingContext) {
 		  LOGGER.info("Fetching all todos...");
 
-		  final List<bean.Todo> todos = todoService.findAll();
+		  final List<main.java.bean.Todo> todos = todoService.findAll();
 		  LOGGER.info(todos);
 		  
 		  final JsonObject jsonResponse = new JsonObject();
@@ -127,7 +126,7 @@ public class TodoApiVerticle extends AbstractVerticle {
 	    final Todo updatedTodo = new Todo(id, title, state, description, position);
 	    final Todo savedTodo = todoService.update(updatedTodo);
 
-	    final List<bean.Todo> todos = todoService.findAll();
+	    final List<main.java.bean.Todo> todos = todoService.findAll();
 	    final JsonObject jsonResponse = new JsonObject();
 	    jsonResponse.put("todos", todos);
 	    routingContext.response()
@@ -150,7 +149,7 @@ public class TodoApiVerticle extends AbstractVerticle {
 	    
 		todoService.remove(id);
 
-	    final List<bean.Todo> todos = todoService.findAll();
+	    final List<main.java.bean.Todo> todos = todoService.findAll();
 	    final JsonObject jsonResponse = new JsonObject();
 	    jsonResponse.put("todos", todos);
 	    routingContext.response()

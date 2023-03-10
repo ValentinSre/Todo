@@ -1,11 +1,11 @@
-package service;
+package main.java.service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import bean.Todo;
+import main.java.bean.Todo;
 
 public class TodoService {
 	
